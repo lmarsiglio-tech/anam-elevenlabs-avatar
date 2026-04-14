@@ -4,8 +4,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    // Step 1: Get signed URL from ElevenLabs
-    const elevenLabsResponse = await fetch(
+    const elRes = await fetch(
       `https://api.elevenlabs.io/v1/convai/conversation/get-signed-url?agent_id=${process.env.ELEVENLABS_AGENT_ID}`,
       {
         method: "GET",
@@ -13,17 +12,16 @@ export default async function handler(req, res) {
       }
     );
 
-    if (!elevenLabsResponse.ok) {
-      const errText = await elevenLabsResponse.text();
-      console.error("ElevenLabs error:", elevenLabsResponse.status, errText);
-      return res.status(500).json({ error: "Failed to get ElevenLabs signed URL" });
+    if (!elRes.ok) {
+      const errText = await elRes.text();
+      console.error("ElevenLabs error:", elRes.status, errText);
+      return res.status(500).json({ error: "ElevenLabs error: " + errText });
     }
 
-    const { signed_url } = await elevenLabsResponse.json();
+    const { signed_url } = await elRes.json();
     console.log("Got ElevenLabs signed URL");
 
-    // Step 2: Create Anam session token with ElevenLabs settings
-    const anamResponse = await fetch("https://api.anam.ai/v1/auth/session-token", {
+    const anamRes = await fetch("https://api.anam.ai/v1/auth/session-token", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -33,24 +31,27 @@ export default async function handler(req, res) {
         personaConfig: {
           avatarId: process.env.ANAM_AVATAR_ID,
         },
-        elevenLabsAgentSettings: {
-          signedUrl: signed_url,
+        environment: {
+          elevenLabsAgentSettings: {
+            signedUrl: signed_url,
+            agentId: process.env.ELEVENLABS_AGENT_ID,
+          },
         },
       }),
     });
 
-    if (!anamResponse.ok) {
-      const errText = await anamResponse.text();
-      console.error("Anam error:", anamResponse.status, errText);
-      return res.status(500).json({ error: "Failed to create Anam session: " + errText });
+    if (!anamRes.ok) {
+      const errText = await anamRes.text();
+      console.error("Anam error:", anamRes.status, errText);
+      return res.status(500).json({ error: "Anam error: " + errText });
     }
 
-    const { sessionToken } = await anamResponse.json();
+    const { sessionToken } = await anamRes.json();
     console.log("Got Anam session token");
 
     return res.status(200).json({ sessionToken });
   } catch (error) {
     console.error("Server error:", error);
-    return res.status(500).json({ error: "Internal server error: " + error.message });
+    return res.status(500).json({ error: error.message });
   }
 }
