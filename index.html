@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="it">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Assistente Cassa in Cloud — TeamSystem</title>
+    <style>
+      /* ---------- Reset & base ---------- */
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+
+      :root {
+        --ts-blue: #00A3E0;
+        --ts-blue-dark: #0077B6;
+        --ts-blue-darker: #005A8B;
+        --ts-yellow: #FFC72C;
+        --ts-orange: #FF6B35;
+        --ts-magenta: #E91E63;
+        --ink: #0F172A;
+        --ink-soft: #334155;
+        --muted: #64748B;
+        --surface: #FFFFFF;
+        --surface-alt: #F8FAFC;
+        --border: #E2E8F0;
+        --danger: #DC2626;
+        --success: #10B981;
+        --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.04);
+        --shadow-md: 0 4px 16px rgba(15, 23, 42, 0.06);
+        --shadow-lg: 0 12px 40px rgba(15, 23, 42, 0.08);
+      }
+
+      html, body { height: 100%; }
+
+      body {
+        background: var(--surface-alt);
+        color: var(--ink);
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Inter", Roboto, sans-serif;
+        font-size: 15px;
+        line-height: 1.5;
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+
+      /* ---------- Header ---------- */
+      .header {
+        background: var(--surface);
+        border-bottom: 1px solid var(--border);
+        box-shadow: var(--shadow-sm);
+      }
+
+      .header-inner {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 18px 32px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 24px;
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+      }
+
+      .brand img {
+        height: 36px;
+        width: auto;
+        display: block;
+      }
+
+      .brand-divider {
+        width: 1px;
+        height: 28px;
+        background: var(--border);
+      }
+
+      .product-title {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .product-title .label {
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+
+      .product-title .name {
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--ink);
+        letter-spacing: -0.01em;
+      }
+
+      .status-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 14px;
+        background: var(--surface-alt);
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--ink-soft);
+      }
+
+      .status-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--muted);
+        transition: background 0.2s ease;
+      }
+
+      .status-chip.is-live .status-dot {
+        background: var(--success);
+        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.5);
+        animation: pulse 1.8s ease-out infinite;
+      }
+
+      .status-chip.is-connecting .status-dot {
+        background: var(--ts-yellow);
+      }
+
+      .status-chip.is-error .status-dot {
+        background: var(--danger);
+      }
+
+      @keyframes pulse {
+        0%   { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
+        70%  { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+      }
+
+      /* ---------- Signature color bar (TeamSystem identity) ---------- */
+      .signature-bar {
+        height: 4px;
+        background: linear-gradient(
+          90deg,
+          var(--ts-blue-dark) 0%,
+          var(--ts-blue) 28%,
+          var(--ts-yellow) 55%,
+          var(--ts-orange) 78%,
+          var(--ts-magenta) 100%
+        );
+      }
+
+      /* ---------- Main stage ---------- */
+      .stage {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 48px 24px;
+      }
+
+      .stage-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 20px;
+        box-shadow: var(--shadow-lg);
+        padding: 40px;
+        width: 100%;
+        max-width: 600px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .stage-title {
+        font-size: 20px;
+        font-weight: 600;
+        color: var(--ink);
+        letter-spacing: -0.01em;
+        margin-bottom: 4px;
+      }
+
+      .stage-subtitle {
+        font-size: 14px;
+        color: var(--muted);
+        margin-bottom: 28px;
+        text-align: center;
+      }
+
+      /* ---------- Avatar video ---------- */
+      .video-frame {
+        position: relative;
+        width: 480px;
+        max-width: 100%;
+        aspect-ratio: 1 / 1;
+        border-radius: 16px;
+        overflow: hidden;
+        background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%);
+        border: 1px solid var(--border);
+        box-shadow: var(--shadow-md);
+        margin-bottom: 24px;
+      }
+
+      #avatar-video {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+      }
+
+      .video-frame::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        border-radius: 16px;
+        pointer-events: none;
+        box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+      }
+
+      .video-placeholder {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        color: rgba(255, 255, 255, 0.45);
+        font-size: 13px;
+        gap: 10px;
+        pointer-events: none;
+      }
+
+      .video-placeholder.hidden { display: none; }
+
+      .video-placeholder .icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.08);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 22px;
+      }
+
+      /* ---------- Controls ---------- */
+      .controls {
+        display: flex;
+        gap: 12px;
+        margin-top: 4px;
+      }
+
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 28px;
+        font-size: 14px;
+        font-weight: 600;
+        border: 1px solid transparent;
+        border-radius: 10px;
+        cursor: pointer;
+        font-family: inherit;
+        letter-spacing: 0.01em;
+        transition: all 0.15s ease;
+      }
+
+      .btn:focus-visible {
+        outline: 2px solid var(--ts-blue);
+        outline-offset: 2px;
+      }
+
+      .btn-primary {
+        background: var(--ts-blue);
+        color: #fff;
+        box-shadow: 0 1px 2px rgba(0, 119, 182, 0.2);
+      }
+
+      .btn-primary:hover:not(:disabled) {
+        background: var(--ts-blue-dark);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(0, 119, 182, 0.25);
+      }
+
+      .btn-primary:active:not(:disabled) { transform: translateY(0); }
+
+      .btn-primary:disabled {
+        background: #CBD5E1;
+        color: #fff;
+        cursor: not-allowed;
+        box-shadow: none;
+      }
+
+      .btn-secondary {
+        background: var(--surface);
+        color: var(--danger);
+        border-color: #FCA5A5;
+      }
+
+      .btn-secondary:hover {
+        background: #FEF2F2;
+        border-color: var(--danger);
+      }
+
+      #stop-btn { display: none; }
+
+      /* ---------- Error ---------- */
+      .error-message {
+        margin-top: 20px;
+        padding: 12px 16px;
+        background: #FEF2F2;
+        border: 1px solid #FECACA;
+        border-radius: 8px;
+        color: var(--danger);
+        font-size: 13px;
+        text-align: center;
+        max-width: 480px;
+        display: none;
+      }
+
+      .error-message.visible { display: block; }
+
+      /* ---------- Footer ---------- */
+      .footer {
+        padding: 20px 32px;
+        text-align: center;
+        font-size: 12px;
+        color: var(--muted);
+        border-top: 1px solid var(--border);
+        background: var(--surface);
+      }
+
+      .footer strong { color: var(--ink-soft); font-weight: 600; }
+
+      /* ---------- Responsive ---------- */
+      @media (max-width: 640px) {
+        .header-inner { padding: 14px 20px; flex-wrap: wrap; gap: 12px; }
+        .brand img { height: 28px; }
+        .brand-divider { display: none; }
+        .product-title .name { font-size: 14px; }
+        .stage { padding: 24px 16px; }
+        .stage-card { padding: 24px; border-radius: 16px; }
+        .video-frame { width: 100%; }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Header with TeamSystem branding -->
+    <header class="header">
+      <div class="header-inner">
+        <div class="brand">
+          <img src="/logo_TS.png" alt="TeamSystem" />
+          <div class="brand-divider"></div>
+          <div class="product-title">
+            <span class="label">Demo</span>
+            <span class="name">Assistente Cassa in Cloud</span>
+          </div>
+        </div>
+        <div id="status-chip" class="status-chip">
+          <span class="status-dot"></span>
+          <span id="status-text">Non connesso</span>
+        </div>
+      </div>
+      <!-- TeamSystem signature color bar -->
+      <div class="signature-bar"></div>
+    </header>
+
+    <!-- Main stage -->
+    <main class="stage">
+      <div class="stage-card">
+        <h1 class="stage-title">Parla con l'assistente</h1>
+        <p class="stage-subtitle">
+          Premi Start per avviare una conversazione vocale con l'avatar. Parla
+          naturalmente, come faresti con un collega.
+        </p>
+
+        <div class="video-frame">
+          <video id="avatar-video" autoplay playsinline></video>
+          <div id="video-placeholder" class="video-placeholder">
+            <div class="icon">🎤</div>
+            <span>In attesa di avvio</span>
+          </div>
+        </div>
+
+        <div class="controls">
+          <button id="start-btn" class="btn btn-primary">
+            <span>🎤</span>
+            <span>Avvia conversazione</span>
+          </button>
+          <button id="stop-btn" class="btn btn-secondary">
+            <span>⏹</span>
+            <span>Termina</span>
+          </button>
+        </div>
+
+        <div id="error" class="error-message"></div>
+      </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+      Powered by <strong>TeamSystem</strong> · Demo vocale con AI conversazionale
+    </footer>
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
