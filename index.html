@@ -1,18 +1,15 @@
 <!DOCTYPE html>
-<!-- trigger redploy -->
 <html lang="it">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Assistente Cassa in Cloud — TeamSystem</title>
     <style>
-      /* ---------- Reset & base ---------- */
       * { margin: 0; padding: 0; box-sizing: border-box; }
 
       :root {
         --ts-blue: #00A3E0;
         --ts-blue-dark: #0077B6;
-        --ts-blue-darker: #005A8B;
         --ts-yellow: #FFC72C;
         --ts-orange: #FF6B35;
         --ts-magenta: #E91E63;
@@ -29,7 +26,7 @@
         --shadow-lg: 0 12px 40px rgba(15, 23, 42, 0.08);
       }
 
-      html, body { height: 100%; }
+      html, body { height: 100%; overflow: hidden; }
 
       body {
         background: var(--surface-alt);
@@ -39,7 +36,7 @@
         line-height: 1.5;
         display: flex;
         flex-direction: column;
-        min-height: 100vh;
+        height: 100vh;
         -webkit-font-smoothing: antialiased;
         -moz-osx-font-smoothing: grayscale;
       }
@@ -49,12 +46,13 @@
         background: var(--surface);
         border-bottom: 1px solid var(--border);
         box-shadow: var(--shadow-sm);
+        flex-shrink: 0;
       }
 
       .header-inner {
         max-width: 1200px;
         margin: 0 auto;
-        padding: 18px 32px;
+        padding: 14px 32px;
         display: flex;
         align-items: center;
         justify-content: space-between;
@@ -68,7 +66,7 @@
       }
 
       .brand img {
-        height: 36px;
+        height: 32px;
         width: auto;
         display: block;
       }
@@ -85,15 +83,15 @@
       }
 
       .product-title .label {
-        font-size: 11px;
+        font-size: 10px;
         font-weight: 600;
-        letter-spacing: 0.08em;
+        letter-spacing: 0.1em;
         text-transform: uppercase;
         color: var(--muted);
       }
 
       .product-title .name {
-        font-size: 16px;
+        font-size: 15px;
         font-weight: 600;
         color: var(--ink);
         letter-spacing: -0.01em;
@@ -126,13 +124,8 @@
         animation: pulse 1.8s ease-out infinite;
       }
 
-      .status-chip.is-connecting .status-dot {
-        background: var(--ts-yellow);
-      }
-
-      .status-chip.is-error .status-dot {
-        background: var(--danger);
-      }
+      .status-chip.is-connecting .status-dot { background: var(--ts-yellow); }
+      .status-chip.is-error .status-dot { background: var(--danger); }
 
       @keyframes pulse {
         0%   { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
@@ -140,7 +133,7 @@
         100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
       }
 
-      /* ---------- Signature color bar (TeamSystem identity) ---------- */
+      /* ---------- Signature color bars (top & bottom) ---------- */
       .signature-bar {
         height: 4px;
         background: linear-gradient(
@@ -151,6 +144,7 @@
           var(--ts-orange) 78%,
           var(--ts-magenta) 100%
         );
+        flex-shrink: 0;
       }
 
       /* ---------- Main stage ---------- */
@@ -159,49 +153,50 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        padding: 48px 24px;
+        padding: 20px;
+        min-height: 0;
       }
 
       .stage-card {
         background: var(--surface);
         border: 1px solid var(--border);
-        border-radius: 20px;
+        border-radius: 18px;
         box-shadow: var(--shadow-lg);
-        padding: 40px;
-        width: 100%;
-        max-width: 600px;
+        padding: 24px 32px;
         display: flex;
         flex-direction: column;
         align-items: center;
+        gap: 14px;
+        max-height: 100%;
       }
 
       .stage-title {
-        font-size: 20px;
+        font-size: 18px;
         font-weight: 600;
         color: var(--ink);
         letter-spacing: -0.01em;
-        margin-bottom: 4px;
       }
 
       .stage-subtitle {
-        font-size: 14px;
+        font-size: 13px;
         color: var(--muted);
-        margin-bottom: 28px;
         text-align: center;
+        max-width: 440px;
+        margin-top: -8px;
       }
 
       /* ---------- Avatar video ---------- */
       .video-frame {
         position: relative;
-        width: 480px;
-        max-width: 100%;
-        aspect-ratio: 1 / 1;
-        border-radius: 16px;
+        width: 360px;
+        height: 360px;
+        max-height: 46vh;
+        max-width: 46vh;
+        border-radius: 14px;
         overflow: hidden;
         background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%);
         border: 1px solid var(--border);
         box-shadow: var(--shadow-md);
-        margin-bottom: 24px;
       }
 
       #avatar-video {
@@ -215,7 +210,7 @@
         content: "";
         position: absolute;
         inset: 0;
-        border-radius: 16px;
+        border-radius: 14px;
         pointer-events: none;
         box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
       }
@@ -227,7 +222,7 @@
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        color: rgba(255, 255, 255, 0.45);
+        color: rgba(255, 255, 255, 0.5);
         font-size: 13px;
         gap: 10px;
         pointer-events: none;
@@ -236,32 +231,31 @@
       .video-placeholder.hidden { display: none; }
 
       .video-placeholder .icon {
-        width: 48px;
-        height: 48px;
+        width: 44px;
+        height: 44px;
         border-radius: 50%;
         background: rgba(255, 255, 255, 0.08);
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 22px;
+        font-size: 20px;
       }
 
       /* ---------- Controls ---------- */
       .controls {
         display: flex;
-        gap: 12px;
-        margin-top: 4px;
+        gap: 10px;
       }
 
       .btn {
         display: inline-flex;
         align-items: center;
         gap: 8px;
-        padding: 12px 28px;
+        padding: 10px 24px;
         font-size: 14px;
         font-weight: 600;
         border: 1px solid transparent;
-        border-radius: 10px;
+        border-radius: 9px;
         cursor: pointer;
         font-family: inherit;
         letter-spacing: 0.01em;
@@ -309,15 +303,14 @@
 
       /* ---------- Error ---------- */
       .error-message {
-        margin-top: 20px;
-        padding: 12px 16px;
+        padding: 10px 14px;
         background: #FEF2F2;
         border: 1px solid #FECACA;
         border-radius: 8px;
         color: var(--danger);
-        font-size: 13px;
+        font-size: 12px;
         text-align: center;
-        max-width: 480px;
+        max-width: 440px;
         display: none;
       }
 
@@ -325,30 +318,39 @@
 
       /* ---------- Footer ---------- */
       .footer {
-        padding: 20px 32px;
+        padding: 10px 32px;
         text-align: center;
-        font-size: 12px;
+        font-size: 11px;
         color: var(--muted);
-        border-top: 1px solid var(--border);
         background: var(--surface);
+        flex-shrink: 0;
       }
 
       .footer strong { color: var(--ink-soft); font-weight: 600; }
 
       /* ---------- Responsive ---------- */
       @media (max-width: 640px) {
-        .header-inner { padding: 14px 20px; flex-wrap: wrap; gap: 12px; }
-        .brand img { height: 28px; }
+        html, body { overflow: auto; }
+        body { height: auto; min-height: 100vh; }
+        .header-inner { padding: 12px 16px; flex-wrap: wrap; gap: 10px; }
+        .brand img { height: 26px; }
         .brand-divider { display: none; }
         .product-title .name { font-size: 14px; }
-        .stage { padding: 24px 16px; }
-        .stage-card { padding: 24px; border-radius: 16px; }
-        .video-frame { width: 100%; }
+        .stage { padding: 16px; }
+        .stage-card { padding: 20px; border-radius: 14px; width: 100%; }
+        .video-frame { width: 100%; height: auto; aspect-ratio: 1/1; max-width: none; max-height: none; }
+      }
+
+      /* ---------- Short viewport (laptops) ---------- */
+      @media (max-height: 720px) and (min-width: 641px) {
+        .video-frame { width: 300px; height: 300px; }
+        .stage-card { padding: 20px 28px; gap: 12px; }
+        .stage-title { font-size: 17px; }
       }
     </style>
   </head>
   <body>
-    <!-- Header with TeamSystem branding -->
+    <!-- Header -->
     <header class="header">
       <div class="header-inner">
         <div class="brand">
@@ -364,9 +366,10 @@
           <span id="status-text">Non connesso</span>
         </div>
       </div>
-      <!-- TeamSystem signature color bar -->
-      <div class="signature-bar"></div>
     </header>
+
+    <!-- Top signature color bar -->
+    <div class="signature-bar"></div>
 
     <!-- Main stage -->
     <main class="stage">
@@ -400,6 +403,9 @@
       </div>
     </main>
 
+    <!-- Bottom signature color bar -->
+    <div class="signature-bar"></div>
+
     <!-- Footer -->
     <footer class="footer">
       Powered by <strong>TeamSystem</strong> · Demo vocale con AI conversazionale
@@ -408,3 +414,4 @@
     <script type="module" src="/src/main.js"></script>
   </body>
 </html>
+
